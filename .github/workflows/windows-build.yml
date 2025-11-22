@@ -1,0 +1,36 @@
+name: Windows Build
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            make
+
+      - name: Build with MinGW
+        shell: msys2 {0}
+        run: |
+          make -C src clean
+          make -C src
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: asm85-windows-x86_64
+          path: src/asm85.exe
+          if-no-files-found: error
